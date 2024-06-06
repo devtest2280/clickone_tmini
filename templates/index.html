@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Counter App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .counter-block {
+        border: 2px solid #ffa500;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #fff;
+      }
+      .plus-one {
+        position: absolute;
+        font-size: 24px;
+        font-weight: bold;
+        color: #ae2a3a;
+        opacity: 0;
+        animation: fade-out 1s ease-out forwards;
+      }
+      @keyframes fade-out {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-200px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container text-center mt-5">
+        <div class="counter-block">
+          <h1 id="counter">Counter: 0</h1>
+        </div>
+        <div id="clicker"><img src="{{ url_for('static', filename='img/gold_2.png') }}" width="200" alt="Increment" class="mt-5" id="increment-button"></div>
+      </div>
+      <div class="container mt-5">
+        <div class="row">
+          <div class="col">
+            <button class="btn btn-primary btn-block" id="button-a">A</button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary btn-block" id="button-b">B</button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary btn-block" id="button-c">C</button>
+          </div>
+        </div>
+      </div>
+  </body>
+  <script>
+    let counter = 0;
+
+    // Load counter value from local storage on page load
+    const savedCounter = localStorage.getItem('counter');
+    if (savedCounter) {
+      counter = parseInt(savedCounter);
+      document.getElementById('counter').innerText = 'Counter: ' + counter;
+    }
+
+    // Update counter value on server every 10 seconds
+    setInterval(() => {
+        // Send GET request to retrieve counter value from server
+        fetch('/increment')
+          .then(response => response.text())
+          .then(data => {
+            counter = parseInt(data);
+            document.getElementById('counter').innerText = 'Counter: ' + counter;
+            localStorage.setItem('counter', counter);
+          });
+
+        // Send POST request to update counter value on server
+        fetch('/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ counter })
+        });
+      }, 10000);
+
+    document.getElementById('increment-button').addEventListener('click', function(event) {
+      counter++;
+      document.getElementById('counter').innerText = 'Counter: ' + counter;
+      localStorage.setItem('counter', counter);
+
+      // Create "+1" text element
+      const plusOne = document.createElement('div');
+      plusOne.classList.add('plus-one');
+      plusOne.innerText = '+1';
+
+      // Position "+1" text element at click location
+      //const rect = event.target.getBoundingClientRect();
+      const x = event.clientX;
+      const y = event.clientY;
+      plusOne.style.left = x + 'px';
+      plusOne.style.top = y + 'px';
+
+      // Add "+1" text element to document
+      document.body.appendChild(plusOne);
+
+      // Remove "+1" text element after animation completes
+      setTimeout(() => {
+        plusOne.remove();
+      }, 1000);
+    });
+  </script>
+</html>
